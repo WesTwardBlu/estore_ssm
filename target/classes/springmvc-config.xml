@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" 
+       xmlns:mvc="http://www.springframework.org/schema/mvc" 
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd  
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	
+	<context:component-scan base-package="com.blue.controller" />
+	
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <!-- <constructor-arg ref="utf8Charset"/> -->
+                 <!-- <property name="supportedMediaTypes" value = "text/plain;charset=UTF-8" /> -->
+                 <property name="writeAcceptCharset" value="false" /><!-- 用于避免响应头过大 --> 
+                 <property name = "supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>   
+                        <value>text/html;charset=UTF-8</value>   
+                    </list>   
+                </property>
+            </bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	<!--此配置不在需要，因为父容器中已经存在此配置  -->
+	<!-- <context:component-scan base-package="com.blue.service" /> -->
+	
+	<!-- 开启springmvc的requestmapping等注解的支持 -->
+	<!-- 开启controller返回数据的支持，string,json等支持 -->
+	<!-- <bean id="utf8Charset" class="java.nio.charset.Charset"
+          factory-method="forName">
+        <constructor-arg value="UTF-8"/>
+    </bean> -->
+	
+	<!-- <mvc:default-servlet-handler/> -->
+	<mvc:resources location="/bank_img/" mapping="/bank_img/**" />
+	<mvc:resources location="/images/" mapping="/images/**" />
+	<mvc:resources location="/js/" mapping="/js/**" />
+	<mvc:resources location="/temp/" mapping="/temp/**" />
+	<mvc:resources location="/upload/" mapping="/upload/**" />
+	<mvc:resources location="/mutilpleFlash.js" mapping="/mutilpleFlash.js" />
+	
+	<!-- springmvc拦截器，用来拦截未登录的路径 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<mvc:exclude-mapping path="/index"/>
+			<!-- <mvc:exclude-mapping path="/WEB-INF/jsp/index.jsp"/> -->
+			<mvc:exclude-mapping path="/user/login"/>
+			<mvc:exclude-mapping path="/user/activecode/**"/><!-- 将RESTful路径/user/activecode/0ad700bf-02f9放过 -->
+			<mvc:exclude-mapping path="/user/preregist"/>
+			<mvc:exclude-mapping path="/user/toregist"/>
+			<mvc:exclude-mapping path="/user/regist"/>
+			<mvc:exclude-mapping path="/checkcode"/>
+			<mvc:exclude-mapping path="/product/findall"/>
+			<mvc:exclude-mapping path="/WEB-INF/jsp/regist.jsp"/>
+			<mvc:exclude-mapping path="/callback/notify"/>
+			
+			<bean class="com.blue.interceptor.LoginInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->  
+    <bean id="multipartResolver"    
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">    
+        <!-- 默认编码 -->  
+        <property name="defaultEncoding" value="utf-8" />    
+        <!-- 文件大小最大值 -->  
+        <property name="maxUploadSize" value="10485760000" />    
+        <!-- 内存中的最大值 -->  
+        <property name="maxInMemorySize" value="40960" />    
+        <!-- 启用是为了推迟文件解析，以便捕获文件大小异常 -->
+        <property name="resolveLazily" value="true"/>
+    </bean>   
+	
+	<!-- 加载properties资源 ，用于校验和国际化-->
+	<bean id="messageSource" 
+            class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="classpath:messages" />
+    </bean>
+	
+	<!-- 定义跳转的文件的前后缀 ，视图模式配置-->  
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+        <!-- 这里的配置我的理解是自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 -->  
+        <property name="prefix" value="/WEB-INF/jsp/" />  
+        <property name="suffix" value=".jsp" />  
+    </bean>
+	
+</beans>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blue.dao.ProductDao">
+  <resultMap id="BaseResultMap" type="com.blue.bean.Product">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="price" jdbcType="DOUBLE" property="price" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="pnum" jdbcType="INTEGER" property="pnum" />
+    <result column="imgurl" jdbcType="VARCHAR" property="imgurl" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, name, price, category, pnum, imgurl, description
+  </sql>
+  
+  <!-- 查找所有商品 -->
+  <select id="findAll" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from products
+  </select>
+  
+  <!-- 根据id查找商品 -->
+  <select id="findById" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from products
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  
+  
+  <!-- 添加商品 -->
+  <insert id="addProduct" parameterType="com.blue.bean.Product">
+    insert into products (id, name, price, 
+      category, pnum, imgurl, 
+      description)
+    values (#{id,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{price,jdbcType=DOUBLE}, 
+      #{category,jdbcType=VARCHAR}, #{pnum,jdbcType=INTEGER}, #{imgurl,jdbcType=VARCHAR}, 
+      #{description,jdbcType=VARCHAR})
+  </insert>
+ 
+  <!-- 减商品数量 -->
+  <update id="subProductCount" parameterType="com.blue.bean.Order">
+    <foreach collection="orderItems" item="orderItem" separator=";">
+    update products
+    set 
+    pnum= pnum - #{orderItem.buynum,jdbcType=INTEGER}
+    where id = #{orderItem.productId,jdbcType=VARCHAR}
+    </foreach>
+  </update>
+  <!-- 增加商品数量 -->
+  <update id="addProductCount" parameterType="com.blue.bean.Order">
+    <foreach collection="orderItems" item="orderItem" separator=";">
+    update products
+    set 
+    pnum= pnum + #{orderItem.buynum,jdbcType=INTEGER}
+    where id = #{orderItem.productId,jdbcType=VARCHAR}
+    </foreach>
+  </update>
+  
+  <!-- 查找所有商品销售榜单 -->
+  <!-- 注释掉，这种方法错误<select id="findSell" resultMap="com.blue.bean.Product"> -->
+  <select id="findSell" resultType="com.blue.bean.Product">
+    select 
+    products.name,sum(buynum) as totalSaleNum 
+    from orders,orderItem,products 
+    where 
+    orders.id=orderItem.order_id 
+    and products.id=orderITem.product_id 
+    and orders.paystate=1 
+    group by products.id 
+    order by totalSaleNum desc
+  </select>
+</mapper>

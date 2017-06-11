@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blue.dao.OrderItemDao">
+  <resultMap id="BaseResultMap" type="com.blue.bean.OrderItem">
+    <id column="order_id" jdbcType="VARCHAR" property="orderId" />
+    <id column="product_id" jdbcType="VARCHAR" property="productId" />
+    <result column="buynum" jdbcType="INTEGER" property="buynum" />
+    
+    <result column="name" jdbcType="INTEGER" property="name" />
+    <result column="price" jdbcType="DOUBLE" property="price" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    order_id, product_id, buynum
+  </sql>
+  
+  <!--  根据订单查询订单项 -->
+  <select id="findOrderItemByOrder" parameterType="com.blue.bean.Order" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    ,name,price
+    from orderitem,products
+    where orderitem.product_id=products.id
+      and order_id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!--  根据订单id查询订单项 -->
+  <select id="findOrderItemByOrderById" parameterType="string" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from orderitem
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  
+  
+  <!-- 添加订单项 -->
+  <insert id="addOrderItem" parameterType="com.blue.bean.Order">
+    insert into orderitem (order_id, product_id, buynum
+      )
+    values 
+      <foreach collection="orderItems" item="orderItem" separator=",">
+      	(#{orderItem.orderId,jdbcType=VARCHAR}, #{orderItem.productId,jdbcType=VARCHAR}, #{orderItem.buynum,jdbcType=INTEGER}
+      )
+      </foreach>
+  </insert>
+  
+  <!-- 删除订单项 -->
+  <delete id="delOrderItem" parameterType="string">
+    delete from orderitem
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  
+</mapper>

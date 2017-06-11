@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blue.dao.OrderDao">
+  <resultMap id="BaseResultMap" type="com.blue.bean.Order">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="money" jdbcType="DOUBLE" property="money" />
+    <result column="receiverinfo" jdbcType="VARCHAR" property="receiverinfo" />
+    <result column="paystate" jdbcType="INTEGER" property="paystate" />
+    <result column="ordertime" jdbcType="TIMESTAMP" property="ordertime" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+  </resultMap>
+  
+  <!-- 多表查询 -->
+  <resultMap id="OrderByUser" type="com.blue.bean.Order">
+  	<id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="money" jdbcType="DOUBLE" property="money" />
+    <result column="receiverinfo" jdbcType="VARCHAR" property="receiverinfo" />
+    <result column="paystate" jdbcType="INTEGER" property="paystate" />
+    <result column="ordertime" jdbcType="TIMESTAMP" property="ordertime" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    id, money, receiverinfo, paystate, ordertime, user_id
+  </sql>
+  
+  <!-- 删除订单 -->
+  <delete id="deleteOrderByPrimaryKey" parameterType="java.lang.String">
+    delete from orders
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <!-- 创建订单 -->
+  <insert id="createOrder" parameterType="com.blue.bean.Order">
+    insert into orders (id, money, receiverinfo, 
+      paystate, ordertime, user_id
+      )
+    values (#{id,jdbcType=VARCHAR}, #{money,jdbcType=DOUBLE}, #{receiverinfo,jdbcType=VARCHAR}, 
+      0, #{ordertime,jdbcType=TIMESTAMP}, #{userId,jdbcType=INTEGER}
+      )
+  </insert>
+  <!-- 根据用户查询订单 -->
+  <select id="findOrderByUser" resultMap="OrderByUser" parameterType="com.blue.bean.User">
+  	select orders.*,username,nickname from orders,users where orders.user_id=users.id
+  	<if test='"admin"==role'>
+  	AND 1=1
+  	</if>
+  	<if test='"user"==role'>
+  	AND user_id=#{id}
+  	</if>
+  </select>
+  
+  <!-- 修改订单状态 -->
+  <update id="updateStateByPrimaryKey" parameterType="java.lang.String">
+    update orders
+    set paystate = 1
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" 
+	xmlns="http://java.sun.com/xml/ns/javaee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_1495790823094">
+	
+	<display-name>estore</display-name>
+	<welcome-file-list>
+		<welcome-file>index</welcome-file>
+	</welcome-file-list>
+	
+	<!-- Spring和mybatis的配置文件 -->
+	<!-- Spring监听器,用来随web容器的启动，创建spring容器 -->
+	<!-- listener to inject HttpServlet Request -->
+	<listener >
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>	
+	</listener>
+	<listener >
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>	
+	</listener>
+	<!-- 
+	在Spring2.0中除了以前的Singleton和Prototype外又加入了三个新的web作用域，分别为request、session和global session，如果你想让你的容器里的
+	某个bean拥有其中某种新的web作用域，除了在bean级上配置相应的scope属性，还必须在容器级做一个额外的初始化配置。
+	 -->
+	<!-- 防止Spring内存溢出监听器 -->
+	<listener>
+		<listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+	</listener>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring-mybatis.xml</param-value>
+	</context-param>
+	
+	<!-- spring-session -->
+	<filter>
+		<filter-name>springSessionRepositoryFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSessionRepositoryFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+   		<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+	
+	<!-- 编码过滤器 -->  
+    <filter>  
+        <filter-name>encodingFilter</filter-name>  
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
+        <async-supported>true</async-supported>  
+        <init-param>  
+            <param-name>encoding</param-name>  
+            <param-value>UTF-8</param-value>  
+        </init-param>  
+    </filter>  
+    <filter-mapping>  
+        <filter-name>encodingFilter</filter-name>  
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping>  
+	
+	<servlet-mapping>    
+	    <servlet-name>default</servlet-name>    
+	    <url-pattern>/js/*</url-pattern>    
+	    <url-pattern>/css/*</url-pattern>    
+	    <url-pattern>/images/*</url-pattern>    
+	    <url-pattern>/bank_img/*</url-pattern>    
+	    <url-pattern>/temp/*</url-pattern>    
+	    <url-pattern>/upload/*</url-pattern>    
+	    <url-pattern>/mutilpleFlash.js</url-pattern>    
+	</servlet-mapping> 
+	
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+	  	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	  	<init-param>
+	  		<param-name>contextConfigLocation</param-name>
+	  		<param-value>classpath:springmvc-config.xml</param-value>
+	  	</init-param> 
+	  	<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<url-pattern>/</url-pattern> 
+	</servlet-mapping>
+	
+	<error-page>
+		<error-code>404</error-code>
+		<location>/jsp/error/404.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/jsp/error/500.jsp</location>
+	</error-page>
+	
+	<!-- <servlet>
+		<servlet-name>checkcode</servlet-name>
+		<servlet-class>cn.blue.estore.utils.CheckImgServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>checkcode</servlet-name>
+		<url-pattern>/checkcode</url-pattern>
+	</servlet-mapping> -->
+	
+</web-app>

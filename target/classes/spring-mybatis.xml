@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" 
+       xmlns:mvc="http://www.springframework.org/schema/mvc" 
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xmlns:tx="http://www.springframework.org/schema/tx" 
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd  
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<context:annotation-config /><!-- 不写也行，因为  <context:component-scan自动包含此功能-->
+
+	<!-- 自动扫描 -->
+	<context:component-scan base-package="com.blue.dao" />
+	<context:component-scan base-package="com.blue.service" />
+	
+	<!-- 引入配置文件 -->  
+    <bean id="propertyConfigurer"  
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+        <property name="location" value="classpath:jdbc.properties" />  
+    </bean>
+	
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"  
+        destroy-method="close">  
+        <property name="driverClass" value="${driver}" />  
+        <property name="jdbcUrl" value="${url}" />  
+        <property name="user" value="${username}" />  
+        <property name="password" value="${password}" />  
+        
+        <property name="minPoolSize"><value>1</value></property>
+        <property name="maxPoolSize"><value>20</value></property>
+        <property name="maxIdleTime"><value>1800</value></property>
+        <property name="acquireIncrement"><value>2</value></property>
+        <property name="maxStatements"><value>0</value></property>
+        <property name="initialPoolSize"><value>2</value></property>
+        <property name="idleConnectionTestPeriod"><value>1800</value></property>
+        <property name="acquireRetryAttempts"><value>30</value></property>
+        <property name="breakAfterAcquireFailure"><value>true</value></property>
+        <property name="testConnectionOnCheckout"><value>false</value></property>
+        
+        
+    </bean>  
+	
+	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 --> 
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		 <!-- 自动扫描mapping.xml文件 -->  
+        <property name="mapperLocations" value="classpath:com/blue/mapper/*.xml"></property>  
+	</bean>
+	<!-- DAO接口所在包名，Spring会自动查找其下的类，注册dao包下的接口的动态实例，在service层可以直接注入 -->  
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+        <property name="basePackage" value="com.blue.dao" />  
+        <!-- 因为从properties文件中取值，所以必须用下面的方式<property name="sqlSessionFactory" ref="sqlSessionFactory"></property> -->  
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>  
+    </bean>
+	
+	<!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->  
+    <bean id="transactionManager"  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+        <property name="dataSource" ref="dataSource" />  
+    </bean>
+	
+	<!-- 开启事务控制的注解支持 -->  
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- Spring中引入其他配置文件 -->
+	<import resource="classpath:spring-aop.xml"/>
+	<import resource="classpath:spring-redis.xml"/>
+	
+</beans>
